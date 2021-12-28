@@ -1,6 +1,6 @@
 # flutter_chat
 
-A new Flutter project.
+just follow [this article](https://www.flutter-study.dev/firebase-app/about-firebase-app) to learn flutter with firebase.
 
 ## Getting Started
 
