@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:flutter_chat/view/chat.dart';
+import 'package:flutter_chat/model/user.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -12,13 +14,14 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   String newUserEmail = "";
-
   String newUserPassword = "";
 
   String infoText = "";
 
   @override
   Widget build(BuildContext context) {
+    final UserModel userModel = Provider.of<UserModel>(context);
+
     return Scaffold(
       body: Center(
         child: Container(
@@ -56,10 +59,13 @@ class _LoginPageState extends State<LoginPage> {
                         await auth.createUserWithEmailAndPassword(
                             email: newUserEmail, password: newUserPassword);
 
-                    final User user = result.user!;
-                    setState(() {
-                      infoText = "Success to register: ${user.email}";
-                    });
+                    userModel.setUser(result.user!);
+
+                    await Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) {
+                        return const ChatPage();
+                      }),
+                    );
                   } catch (e) {
                     setState(() {
                       infoText = "Fail to register: ${e.toString()}";
@@ -69,6 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: const Text('Register User'),
               ),
               const SizedBox(height: 8),
+              // Login Button
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
@@ -78,9 +85,12 @@ class _LoginPageState extends State<LoginPage> {
                       final FirebaseAuth auth = FirebaseAuth.instance;
                       final result = await auth.signInWithEmailAndPassword(
                           email: newUserEmail, password: newUserPassword);
+
+                      userModel.setUser(result.user!);
+
                       await Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (context) {
-                        return ChatPage(result.user!);
+                        return const ChatPage();
                       }));
                     } catch (e) {
                       setState(() {

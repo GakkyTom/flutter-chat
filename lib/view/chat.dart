@@ -1,16 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 import 'package:flutter_chat/view/login.dart';
 import 'package:flutter_chat/view/add_post.dart';
+import 'package:flutter_chat/model/user.dart';
 
 class ChatPage extends StatelessWidget {
-  const ChatPage(this.user, {Key? key}) : super(key: key);
+  const ChatPage({Key? key}) : super(key: key);
 
-  final User user;
   @override
   Widget build(BuildContext context) {
+    final UserModel userModel = Provider.of<UserModel>(context);
+    final User user = userModel.user!;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat page'),
@@ -83,7 +87,7 @@ class ChatPage extends StatelessWidget {
           // move to post screen
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) {
-            return AddPostPage(user);
+            return const AddPostPage();
           }));
         },
       ),
