@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_chat/view/chat.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -23,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
+              // Email
               TextFormField(
                 decoration: const InputDecoration(labelText: "email address"),
                 onChanged: (String value) {
@@ -32,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               const SizedBox(height: 8),
+              // Password
               TextFormField(
                 decoration: const InputDecoration(
                     labelText: "Password (over 6 charactor)"),
@@ -43,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               const SizedBox(height: 8),
+              // Register button
               ElevatedButton(
                 onPressed: () async {
                   try {
@@ -64,6 +69,27 @@ class _LoginPageState extends State<LoginPage> {
                 child: const Text('Register User'),
               ),
               const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                child: OutlinedButton(
+                  child: Text('Login'),
+                  onPressed: () async {
+                    try {
+                      final FirebaseAuth auth = FirebaseAuth.instance;
+                      final result = await auth.signInWithEmailAndPassword(
+                          email: newUserEmail, password: newUserPassword);
+                      await Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) {
+                        return ChatPage(result.user!);
+                      }));
+                    } catch (e) {
+                      setState(() {
+                        infoText = "Failed to Login";
+                      });
+                    }
+                  },
+                ),
+              ),
               Text(infoText)
             ],
           ),
