@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:flutter_chat/model/user.dart';
 
 class AddPostPage extends StatefulWidget {
-  const AddPostPage(this.user, {Key? key}) : super(key: key);
-
-  final User user;
+  const AddPostPage({Key? key}) : super(key: key);
 
   @override
   _AddPostPageState createState() => _AddPostPageState();
@@ -16,6 +17,9 @@ class _AddPostPageState extends State<AddPostPage> {
 
   @override
   Widget build(BuildContext context) {
+    final UserModel userModel = Provider.of<UserModel>(context);
+    final User user = userModel.user!;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Message:'),
@@ -45,7 +49,7 @@ class _AddPostPageState extends State<AddPostPage> {
                       child: const Text('Post'),
                       onPressed: () async {
                         final date = DateTime.now().toLocal().toIso8601String();
-                        final email = widget.user.email;
+                        final email = user.email;
 
                         await FirebaseFirestore.instance
                             .collection('posts')
