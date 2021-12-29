@@ -35,13 +35,13 @@ class ChatPage extends StatelessWidget {
             child: Text('Login info: ${user.email}'),
           ),
           Expanded(
-            child: FutureBuilder<QuerySnapshot>(
+            child: StreamBuilder<QuerySnapshot>(
               // get post message list (asynchronous process)
               // sort by post date
-              future: FirebaseFirestore.instance
+              stream: FirebaseFirestore.instance
                   .collection('posts')
                   .orderBy('date')
-                  .get(),
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final List<DocumentSnapshot> documents = snapshot.data!.docs;
