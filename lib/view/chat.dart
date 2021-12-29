@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -14,6 +15,7 @@ class ChatPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Chat page'),
         actions: [
+          // Logout button
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -26,8 +28,42 @@ class ChatPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Text('Login info: ${user.email}'),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            child: Text('Login info: ${user.email}'),
+          ),
+          Expanded(
+            child: FutureBuilder<QuerySnapshot>(
+              // get post message list (asynchronous process)
+              // sort by post date
+              future: FirebaseFirestore.instance
+                  .collection('posts')
+                  .orderBy('date')
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
+                  // show all posts
+                  return ListView(
+                    children: documents.map((document) {
+                      return Card(
+                        child: ListTile(
+                          title: Text(document['text']),
+                          subtitle: Text(document['email']),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }
+                return Center(
+                  child: Text('Loading...'),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
