@@ -69,10 +69,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: const Text('Register User'),
               ),
               const SizedBox(height: 8),
-              Container(
+              SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  child: Text('Login'),
+                  child: const Text('Login'),
                   onPressed: () async {
                     try {
                       final FirebaseAuth auth = FirebaseAuth.instance;
