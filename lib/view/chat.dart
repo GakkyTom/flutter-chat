@@ -52,12 +52,24 @@ class ChatPage extends StatelessWidget {
                         child: ListTile(
                           title: Text(document['text']),
                           subtitle: Text(document['email']),
+                          // user can delete their own posts
+                          trailing: document['email'] == user.email
+                              ? IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () async {
+                                    await FirebaseFirestore.instance
+                                        .collection('posts')
+                                        .doc(document.id)
+                                        .delete();
+                                  },
+                                )
+                              : null,
                         ),
                       );
                     }).toList(),
                   );
                 }
-                return Center(
+                return const Center(
                   child: Text('Loading...'),
                 );
               },
