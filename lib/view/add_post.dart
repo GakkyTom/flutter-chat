@@ -49,7 +49,7 @@ class _AddPostPageState extends State<AddPostPage> {
 
                         await FirebaseFirestore.instance
                             .collection('posts')
-                            .doc()
+                            .doc() // auto-generate for document ID
                             .set({
                           'text': messageText,
                           'email': email,
