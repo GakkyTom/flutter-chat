@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter_chat/view/login.dart';
+import 'package:flutter_chat/view/add_post.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage(this.user, {Key? key}) : super(key: key);
@@ -31,10 +33,10 @@ class ChatPage extends StatelessWidget {
         child: const Icon(Icons.add),
         onPressed: () async {
           // move to post screen
-          // await Navigator.of(context).push(
-          //  MaterialPageRoute(builder: (context) {
-          //    return AddPostPage()();
-          //  }))
+          await Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) {
+            return AddPostPage(user);
+          }));
         },
       ),
     );
