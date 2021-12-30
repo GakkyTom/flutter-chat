@@ -1,21 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddPostPage extends StatefulWidget {
-  const AddPostPage(this.user, {Key? key}) : super(key: key);
+import 'package:flutter_chat/main.dart';
 
-  final User user;
-
-  @override
-  _AddPostPageState createState() => _AddPostPageState();
-}
-
-class _AddPostPageState extends State<AddPostPage> {
-  String messageText = '';
+class AddPostPage extends ConsumerWidget {
+  const AddPostPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProvider)!;
+    final messageText = ref.watch(messageProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Message:'),
@@ -33,33 +29,32 @@ class _AddPostPageState extends State<AddPostPage> {
                   keyboardType: TextInputType.multiline,
                   maxLines: 3,
                   onChanged: (String value) {
-                    setState(() {
-                      messageText = value;
-                    });
+                    ref.read(messageProvider.notifier).state = value;
                   },
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      child: const Text('Post'),
-                      onPressed: () async {
-                        final date = DateTime.now().toLocal().toIso8601String();
-                        final email = widget.user.email;
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    child: const Text('Post'),
+                    onPressed: () async {
+                      final date = DateTime.now().toLocal().toIso8601String();
+                      final email = user.email;
 
-                        await FirebaseFirestore.instance
-                            .collection('posts')
-                            .doc() // auto-generate for document ID
-                            .set({
-                          'text': messageText,
-                          'email': email,
-                          'date': date
-                        });
+                      await FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc() // auto-generate for document ID
+                          .set({
+                        'text': messageText,
+                        'email': email,
+                        'date': date
+                      });
 
-                        // back to chat screen
-                        Navigator.of(context).pop();
-                      },
-                    ))
+                      // back to chat screen
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
               ],
             )),
       ),

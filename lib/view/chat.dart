@@ -1,16 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter_chat/main.dart';
 import 'package:flutter_chat/view/login.dart';
 import 'package:flutter_chat/view/add_post.dart';
 
-class ChatPage extends StatelessWidget {
-  const ChatPage(this.user, {Key? key}) : super(key: key);
+// Use ConsumerWidget to pass data through provider
+class ChatPage extends ConsumerWidget {
+  const ChatPage({Key? key}) : super(key: key);
 
-  final User user;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // this is user state
+    // ref) https://zenn.dev/riscait/books/flutter-riverpod-practical-introduction/viewer/migrate-to-v1#stateprovider%E3%82%92%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%93%E3%81%A0%E6%99%82%E3%81%AE%E6%88%BB%E3%82%8A%E5%80%A4%E3%81%8Cstatenotifierprovider%E3%81%A8%E7%B5%B1%E4%B8%80%E3%81%95%E3%82%8C%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
+    final user = ref.watch(userProvider)!;
+    final AsyncValue<QuerySnapshot> asyncPostsQuery =
+        ref.watch(postsQueryProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat page'),
@@ -35,42 +43,38 @@ class ChatPage extends StatelessWidget {
             child: Text('Login info: ${user.email}'),
           ),
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              // get post message list (asynchronous process)
-              // sort by post date
-              stream: FirebaseFirestore.instance
-                  .collection('posts')
-                  .orderBy('date')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                  // show all posts
-                  return ListView(
-                    children: documents.map((document) {
-                      return Card(
-                        child: ListTile(
-                          title: Text(document['text']),
-                          subtitle: Text(document['email']),
-                          // user can delete their own posts
-                          trailing: document['email'] == user.email
-                              ? IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () async {
-                                    await FirebaseFirestore.instance
-                                        .collection('posts')
-                                        .doc(document.id)
-                                        .delete();
-                                  },
-                                )
-                              : null,
-                        ),
-                      );
-                    }).toList(),
-                  );
-                }
+            child: asyncPostsQuery.when(
+              data: (QuerySnapshot query) {
+                return ListView(
+                  children: query.docs.map((document) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(document['text']),
+                        subtitle: Text(document['email']),
+                        trailing: document['email'] == user.email
+                            ? IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () async {
+                                  await FirebaseFirestore.instance
+                                      .collection('posts')
+                                      .doc(document.id)
+                                      .delete();
+                                },
+                              )
+                            : null,
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () {
                 return const Center(
                   child: Text('Loading...'),
+                );
+              },
+              error: (e, stackTrace) {
+                return Center(
+                  child: Text(e.toString()),
                 );
               },
             ),
@@ -83,7 +87,7 @@ class ChatPage extends StatelessWidget {
           // move to post screen
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) {
-            return AddPostPage(user);
+            return const AddPostPage();
           }));
         },
       ),

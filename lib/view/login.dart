@@ -1,24 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter_chat/main.dart';
 import 'package:flutter_chat/view/chat.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
-  _LoginPageState createState() => _LoginPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    String email = ref.watch(emailProvider);
+    String password = ref.watch(passwordProvider);
+    String infoText = ref.watch(infoTextProvider);
 
-class _LoginPageState extends State<LoginPage> {
-  String newUserEmail = "";
-
-  String newUserPassword = "";
-
-  String infoText = "";
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Container(
@@ -29,9 +24,7 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 decoration: const InputDecoration(labelText: "email address"),
                 onChanged: (String value) {
-                  setState(() {
-                    newUserEmail = value;
-                  });
+                  ref.read(emailProvider.notifier).state = value;
                 },
               ),
               const SizedBox(height: 8),
@@ -41,9 +34,7 @@ class _LoginPageState extends State<LoginPage> {
                     labelText: "Password (over 6 charactor)"),
                 obscureText: true,
                 onChanged: (String value) {
-                  setState(() {
-                    newUserPassword = value;
-                  });
+                  ref.read(passwordProvider.notifier).state = value;
                 },
               ),
               const SizedBox(height: 8),
@@ -54,16 +45,17 @@ class _LoginPageState extends State<LoginPage> {
                     final FirebaseAuth auth = FirebaseAuth.instance;
                     final UserCredential result =
                         await auth.createUserWithEmailAndPassword(
-                            email: newUserEmail, password: newUserPassword);
+                            email: email, password: password);
 
-                    final User user = result.user!;
-                    setState(() {
-                      infoText = "Success to register: ${user.email}";
-                    });
+                    ref.read(userProvider.notifier).state = result.user;
+
+                    await Navigator.of(context)
+                        .pushReplacement(MaterialPageRoute(builder: (context) {
+                      return const ChatPage();
+                    }));
                   } catch (e) {
-                    setState(() {
-                      infoText = "Fail to register: ${e.toString()}";
-                    });
+                    ref.read(infoTextProvider.notifier).state =
+                        "Fail to register: ${e.toString()}";
                   }
                 },
                 child: const Text('Register User'),
@@ -76,16 +68,15 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     try {
                       final FirebaseAuth auth = FirebaseAuth.instance;
-                      final result = await auth.signInWithEmailAndPassword(
-                          email: newUserEmail, password: newUserPassword);
+                      await auth.signInWithEmailAndPassword(
+                          email: email, password: password);
                       await Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (context) {
-                        return ChatPage(result.user!);
+                        return const ChatPage();
                       }));
                     } catch (e) {
-                      setState(() {
-                        infoText = "Failed to Login";
-                      });
+                      ref.read(infoTextProvider.notifier).state =
+                          "Failed to Login";
                     }
                   },
                 ),
